@@ -1,10 +1,13 @@
 package main
 
 import (
+	"bufio"
 	"encoding/json"
 	"fmt"
 	"log"
 	"net"
+	"os"
+	"strings"
 )
 
 type ClientData struct {
@@ -24,6 +27,7 @@ func main() {
 
 	fmt.Print("Type 1 to be a producer, 2 to be a consumer, or any other number to exit: ")
 	fmt.Scanln(&producer_consumer)
+	reader := bufio.NewReader(os.Stdin)
 
 	if producer_consumer == 1 {
 		// Producer
@@ -32,10 +36,14 @@ func main() {
 			var topic string
 			fmt.Scanln(&topic)
 			fmt.Print("Enter the message you want to publish: ")
-			var message string
-			fmt.Scanln(&message)
+    		message, err := reader.ReadString('\n')
+    		if err != nil {
+    		    fmt.Println("Error:", err)
+    		    return
+    		}
+    		message = strings.TrimSpace(message)
 
-			data := &ClientData{ClientType: "producer", Topic: topic, Message: message}
+			data := &ClientData{ ClientType: "producer", Topic: topic, Message: message }
 
 			marshaledData, err := json.Marshal(data)
 			if err != nil {
@@ -48,16 +56,6 @@ func main() {
 				log.Printf("Failed to write data: %v\n", err)
 				return
 			}
-
-			buf := make([]byte, 1024)
-			n, err := conn.Read(buf)
-
-			if err != nil {
-				log.Printf("Failed to read from connection: %v\n", err)
-				return
-			}
-
-			fmt.Printf("Received message from broker: %s\n", buf[:n])
 		}
 	} else if producer_consumer == 2 {
 		// Consumer
@@ -65,7 +63,7 @@ func main() {
 		var topic string
 		fmt.Scanln(&topic)
 
-		data := &ClientData{ClientType: "consumer", Topic: topic, Message: ""}
+		data := &ClientData{ ClientType: "consumer", Topic: topic, Message: "" }
 		marshaledData, err := json.Marshal(data)
 
 		if err != nil {

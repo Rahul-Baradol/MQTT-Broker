@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"log"
 	"net"
+	"time"
 )
 
 type ClientData struct {
@@ -65,6 +66,7 @@ func (b *Broker) handleProducer(conn net.Conn, Topic string, Message string) {
 	for _, client := range b.Subscribers[Topic] {
 		for i := client.TopicIndex; i < int32(len(b.Topics[Topic])); i++ {
 			client.Conn.Write([]byte(b.Topics[Topic][i]))
+			time.Sleep(100 * time.Microsecond)
 		}
 
 		client.TopicIndex = int32(len(b.Topics[Topic]))
@@ -89,6 +91,7 @@ func (b *Broker) handleConsumer(conn net.Conn, Topic string) {
 
 	for i := client.TopicIndex; i < int32(len(b.Topics[Topic])); i++ {
 		client.Conn.Write([]byte(b.Topics[Topic][i]))
+		time.Sleep(100 * time.Microsecond)
 	}
 
 	client.TopicIndex = int32(len(b.Topics[Topic]))
@@ -112,11 +115,10 @@ func (b *Broker) handleConnection(conn net.Conn) {
 			return
 		}
 
-		conn.Write([]byte("Connection Established! Subscribed to broker."))
-
 		if data.ClientType == "producer" {
 			b.handleProducer(conn, data.Topic, data.Message)
 		} else if data.ClientType == "consumer" {
+			conn.Write([]byte("Connection Established! Subscribed to broker."))
 			b.handleConsumer(conn, data.Topic)
 		}
 	}
