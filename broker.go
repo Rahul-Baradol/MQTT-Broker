@@ -7,9 +7,10 @@ import (
 	"sync"
 )
 
-type ProducerData struct {
-	Topic   string
-	Message string
+type ClientData struct {
+	isProducer bool
+	Topic      string
+	Message    string
 }
 
 type Client struct {
@@ -56,8 +57,6 @@ func (b *Broker) Run() {
 }
 
 func (b *Broker) handleConnection(conn net.Conn) {
-	defer conn.Close()
-
 	// Implement MQTT protocol here
 	// ...
 
@@ -69,8 +68,16 @@ func (b *Broker) handleConnection(conn net.Conn) {
 		return
 	}
 
-	var data 
+	var data ClientData
+	err = json.Unmarshal(buf[:n], &data)
 
+	if err != nil {
+		log.Printf("Failed to unmarshal data: %v", err)
+		return
+	}
+
+	log.Printf("Received data: %+v", data)
+	conn.Write([]byte("Data received"))
 }
 
 func main() {
