@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"log"
 	"net"
-	"sync"
 )
 
 type ClientData struct {
@@ -14,16 +13,15 @@ type ClientData struct {
 }
 
 type Client struct {
-	ID         string
 	Conn       net.Conn
 	TopicIndex int32 // index -> indices for Topics array
-	Mutex      sync.Mutex
+	// Mutex      sync.Mutex
 }
 
 type Broker struct {
 	Topics      map[string][]string  // map[topic] = [data1, data2, ...]
 	Subscribers map[string][]*Client // map[topic] = [client1, client2, ...]
-	Mutex       sync.Mutex
+	// Mutex       sync.Mutex
 }
 
 func NewBroker() *Broker {
@@ -56,12 +54,62 @@ func (b *Broker) Run() {
 	}
 }
 
+// type Broker struct {
+// 	Topics      map[string][]string  // map[topic] = [data1, data2, ...]
+// 	Subscribers map[string][]*Client // map[topic] = [client1, client2, ...]
+// 	// Mutex       sync.Mutex
+// }
+
+func (b *Broker) handleProducer(conn net.Conn, Topic string, Message string) {
+	if _, ok := b.Topics[Topic]; !ok {
+		b.Topics[Topic] = make([]string, 0)
+	}
+
+	b.Topics[Topic] = append(b.Topics[Topic], Message)
+
+	if _, ok := b.Subscribers[Topic]; !ok {
+		b.Subscribers[Topic] = make([]*Client, 0)
+	}
+
+	for _, client := range b.Subscribers[Topic] {
+		for i := client.TopicIndex; i < int32(len(b.Topics[Topic])); i++ {
+			client.Conn.Write([]byte(b.Topics[Topic][i]))
+		}
+
+		client.TopicIndex = int32(len(b.Topics[Topic]))
+	}
+}
+
+func (b *Broker) handleConsumer(conn net.Conn, Topic string) {
+	if _, ok := b.Topics[Topic]; !ok {
+		b.Topics[Topic] = make([]string, 0)
+	}
+
+	if _, ok := b.Subscribers[Topic]; !ok {
+		b.Subscribers[Topic] = make([]*Client, 0)
+	}
+
+	client := &Client{
+		Conn:       conn,
+		TopicIndex: 0,
+	}
+
+	b.Subscribers[Topic] = append(b.Subscribers[Topic], client)
+
+	for i := client.TopicIndex; i < int32(len(b.Topics[Topic])); i++ {
+		client.Conn.Write([]byte(b.Topics[Topic][i]))
+	}
+
+	client.TopicIndex = int32(len(b.Topics[Topic]))
+}
+
 func (b *Broker) handleConnection(conn net.Conn) {
 	// Implement MQTT protocol here
 	// ...
 
 	// Example: Just print the received data
 	buf := make([]byte, 1024)
+
 	for {
 		n, err := conn.Read(buf)
 		if err != nil {
@@ -77,8 +125,13 @@ func (b *Broker) handleConnection(conn net.Conn) {
 			return
 		}
 
-		log.Printf("Received data: %v", data)
-		conn.Write([]byte("Data received"))
+		conn.Write([]byte("Connection Established! Subscribed to broker..."))
+
+		if data.ClientType == "producer" {
+			b.handleProducer(conn, data.Topic, data.Message)
+		} else if data.ClientType == "consumer" {
+			b.handleConsumer(conn, data.Topic)
+		}
 	}
 }
 
