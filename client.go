@@ -7,9 +7,10 @@ import (
 	"net"
 )
 
-type ProducerData struct {
-	Topic   string
-	Message string
+type ClientData struct {
+	isProducer bool
+	Topic      string
+	Message    string
 }
 
 func main() {
@@ -34,7 +35,7 @@ func main() {
 			var message string
 			fmt.Scanln(&message)
 
-			data := &ProducerData{ Topic: topic, Message: message }
+			data := &ClientData{isProducer: true, Topic: topic, Message: message}
 
 			marshaledData, err := json.Marshal(data)
 			if err != nil {
@@ -63,8 +64,17 @@ func main() {
 		fmt.Println("Please enter the topic you want to subscribe to: ")
 		var topic string
 		fmt.Scanln(&topic)
-		
-		_, err = conn.Write([]byte(topic))
+
+		data := &ClientData{isProducer: false, Topic: topic, Message: ""}
+		marshaledData, err := json.Marshal(data)
+
+		if err != nil {
+			log.Fatalf("Failed to marshal data: %v\n", err)
+			return
+		}
+
+		_, err = conn.Write(marshaledData)
+
 		if err != nil {
 			log.Printf("Failed to write data: %v\n", err)
 			return
@@ -73,7 +83,7 @@ func main() {
 		for {
 			buf := make([]byte, 1024)
 			n, err := conn.Read(buf)
-			
+
 			if err != nil {
 				log.Printf("Failed to read from connection: %v\n", err)
 				return

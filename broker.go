@@ -1,22 +1,28 @@
 package main
 
 import (
+	"encoding/json"
 	"log"
 	"net"
 	"sync"
 )
 
+type ProducerData struct {
+	Topic   string
+	Message string
+}
+
 type Client struct {
-	ID     string
-	Conn   net.Conn
-	TopicIndex int32	// index -> indices for Topics array
-	Mutex  sync.Mutex
+	ID         string
+	Conn       net.Conn
+	TopicIndex int32 // index -> indices for Topics array
+	Mutex      sync.Mutex
 }
 
 type Broker struct {
-	Topics    map[string][]string				// map[topic] = [data1, data2, ...]
-	Subscribers map[string][]*Client				// map[topic] = [client1, client2, ...]
-	Mutex      sync.Mutex
+	Topics      map[string][]string  // map[topic] = [data1, data2, ...]
+	Subscribers map[string][]*Client // map[topic] = [client1, client2, ...]
+	Mutex       sync.Mutex
 }
 
 func NewBroker() *Broker {
@@ -24,7 +30,7 @@ func NewBroker() *Broker {
 		// Clients:    make(map[string]*Client),
 		// Subscripts: make(map[string]map[*Client]bool),
 
-		Topics:     make(map[string][]string),
+		Topics:      make(map[string][]string),
 		Subscribers: make(map[string][]*Client),
 	}
 }
@@ -63,14 +69,8 @@ func (b *Broker) handleConnection(conn net.Conn) {
 		return
 	}
 
-	_, err = conn.Write([]byte("Data sent successfully!"))
+	var data 
 
-	if err != nil {
-		log.Printf("Failed to write data: %v", err)
-		return
-	}
-
-	log.Printf("Received data: %s", buf[:n])
 }
 
 func main() {
