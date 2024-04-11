@@ -9,7 +9,7 @@ import (
 type Client struct {
 	ID     string
 	Conn   net.Conn
-	Topics int32	// index -> indices for Topics array
+	TopicIndex int32	// index -> indices for Topics array
 	Mutex  sync.Mutex
 }
 
