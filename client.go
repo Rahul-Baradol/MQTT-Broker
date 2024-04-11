@@ -48,7 +48,15 @@ func main() {
 				return
 			}
 
-			log.Println("Data sent successfully!")
+			buf := make([]byte, 1024)
+			n, err := conn.Read(buf)
+
+			if err != nil {
+				log.Printf("Failed to read from connection: %v\n", err)
+				return
+			}
+
+			fmt.Printf("Received message from broker: %s\n", buf[:n])
 		}
 	} else if producer_consumer == 2 {
 		// Consumer
@@ -70,7 +78,7 @@ func main() {
 				log.Printf("Failed to read from connection: %v\n", err)
 				return
 			}
-			
+
 			fmt.Printf("Received message from broker: %s\n", buf[:n])
 		}
 	} else {
