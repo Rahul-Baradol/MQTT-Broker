@@ -26,9 +26,6 @@ type Broker struct {
 
 func NewBroker() *Broker {
 	return &Broker{
-		// Clients:    make(map[string]*Client),
-		// Subscripts: make(map[string]map[*Client]bool),
-
 		Topics:      make(map[string][]string),
 		Subscribers: make(map[string][]*Client),
 	}
@@ -53,12 +50,6 @@ func (b *Broker) Run() {
 		go b.handleConnection(conn)
 	}
 }
-
-// type Broker struct {
-// 	Topics      map[string][]string  // map[topic] = [data1, data2, ...]
-// 	Subscribers map[string][]*Client // map[topic] = [client1, client2, ...]
-// 	// Mutex       sync.Mutex
-// }
 
 func (b *Broker) handleProducer(conn net.Conn, Topic string, Message string) {
 	if _, ok := b.Topics[Topic]; !ok {
@@ -104,10 +95,6 @@ func (b *Broker) handleConsumer(conn net.Conn, Topic string) {
 }
 
 func (b *Broker) handleConnection(conn net.Conn) {
-	// Implement MQTT protocol here
-	// ...
-
-	// Example: Just print the received data
 	buf := make([]byte, 1024)
 
 	for {
@@ -125,7 +112,7 @@ func (b *Broker) handleConnection(conn net.Conn) {
 			return
 		}
 
-		conn.Write([]byte("Connection Established! Subscribed to broker..."))
+		conn.Write([]byte("Connection Established! Subscribed to broker."))
 
 		if data.ClientType == "producer" {
 			b.handleProducer(conn, data.Topic, data.Message)

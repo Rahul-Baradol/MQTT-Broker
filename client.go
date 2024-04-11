@@ -22,7 +22,7 @@ func main() {
 
 	var producer_consumer int32
 
-	fmt.Print("If you are a producer, type 1 and if you are a consumer, type 2 else type any number to exit: ")
+	fmt.Print("Type 1 to be a producer, 2 to be a consumer, or any other number to exit: ")
 	fmt.Scanln(&producer_consumer)
 
 	if producer_consumer == 1 {
@@ -94,25 +94,4 @@ func main() {
 	} else {
 		return
 	}
-
-	// Implement MQTT protocol here
-	// ...
-
-	// Example: Send some data to the broker
-	// data := []byte("Hello, MQTT broker!")
-	// _, err = conn.Write(data)
-	// if err != nil {
-	// 	log.Printf("Failed to write data: %v", err)
-	// 	return
-	// }
-
-	// Read the success message from the broker
-	// buf := make([]byte, 1024)
-	// n, err := conn.Read(buf)
-	// if err != nil {
-	// 	log.Printf("Failed to read from connection: %v", err)
-	// 	return
-	// }
-
-	// fmt.Printf("Received message from broker: %s\n", buf[:n])
 }
