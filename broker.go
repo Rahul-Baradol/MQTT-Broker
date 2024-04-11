@@ -8,7 +8,7 @@ import (
 )
 
 type ClientData struct {
-	isProducer bool
+	ClientType string
 	Topic      string
 	Message    string
 }
@@ -62,22 +62,24 @@ func (b *Broker) handleConnection(conn net.Conn) {
 
 	// Example: Just print the received data
 	buf := make([]byte, 1024)
-	n, err := conn.Read(buf)
-	if err != nil {
-		log.Printf("Failed to read from connection: %v", err)
-		return
+	for {
+		n, err := conn.Read(buf)
+		if err != nil {
+			log.Printf("Failed to read from connection: %v", err)
+			return
+		}
+
+		var data ClientData
+		err = json.Unmarshal(buf[:n], &data)
+
+		if err != nil {
+			log.Printf("Failed to unmarshal data: %v", err)
+			return
+		}
+
+		log.Printf("Received data: %v", data)
+		conn.Write([]byte("Data received"))
 	}
-
-	var data ClientData
-	err = json.Unmarshal(buf[:n], &data)
-
-	if err != nil {
-		log.Printf("Failed to unmarshal data: %v", err)
-		return
-	}
-
-	log.Printf("Received data: %+v", data)
-	conn.Write([]byte("Data received"))
 }
 
 func main() {

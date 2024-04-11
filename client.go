@@ -8,7 +8,7 @@ import (
 )
 
 type ClientData struct {
-	isProducer bool
+	ClientType string
 	Topic      string
 	Message    string
 }
@@ -35,7 +35,7 @@ func main() {
 			var message string
 			fmt.Scanln(&message)
 
-			data := &ClientData{isProducer: true, Topic: topic, Message: message}
+			data := &ClientData{ClientType: "producer", Topic: topic, Message: message}
 
 			marshaledData, err := json.Marshal(data)
 			if err != nil {
@@ -65,7 +65,7 @@ func main() {
 		var topic string
 		fmt.Scanln(&topic)
 
-		data := &ClientData{isProducer: false, Topic: topic, Message: ""}
+		data := &ClientData{ClientType: "consumer", Topic: topic, Message: ""}
 		marshaledData, err := json.Marshal(data)
 
 		if err != nil {
