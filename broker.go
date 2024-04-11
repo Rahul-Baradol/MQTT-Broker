@@ -9,20 +9,23 @@ import (
 type Client struct {
 	ID     string
 	Conn   net.Conn
-	Topics map[string]bool
+	Topics int32	// index -> indices for Topics array
 	Mutex  sync.Mutex
 }
 
 type Broker struct {
-	Clients    map[string]*Client
-	Subscripts map[string]map[*Client]bool
+	Topics    map[string][]string				// map[topic] = [data1, data2, ...]
+	Subscribers map[string][]*Client				// map[topic] = [client1, client2, ...]
 	Mutex      sync.Mutex
 }
 
 func NewBroker() *Broker {
 	return &Broker{
-		Clients:    make(map[string]*Client),
-		Subscripts: make(map[string]map[*Client]bool),
+		// Clients:    make(map[string]*Client),
+		// Subscripts: make(map[string]map[*Client]bool),
+
+		Topics:     make(map[string][]string),
+		Subscribers: make(map[string][]*Client),
 	}
 }
 
