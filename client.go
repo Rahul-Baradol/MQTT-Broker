@@ -61,7 +61,7 @@ func main() {
 		}
 	} else if producer_consumer == 2 {
 		// Consumer
-		fmt.Println("Please enter the topic you want to subscribe to: ")
+		fmt.Print("Please enter the topic you want to subscribe to: ")
 		var topic string
 		fmt.Scanln(&topic)
 
